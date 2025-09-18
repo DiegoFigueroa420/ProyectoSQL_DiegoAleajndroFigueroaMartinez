@@ -1,0 +1,37 @@
+-- FUNCION CORREGIDA
+
+CREATE FUNCTION fn_membresia_activa(p_usuario_id INT)
+RETURNS TINYINT DETERMINISTIC
+BEGIN
+  DECLARE v_cnt INT DEFAULT 0;
+  SELECT COUNT(*) INTO v_cnt FROM membresias
+    WHERE usuario_id = p_usuario_id
+      AND estado = 'Activa'
+      -- ACA CON CURDATE SE VERIFICA LA FECHA ACTUAL Y SE COMPARA CON LA FECHA DE INICIO Y LA FECHA FINAL
+      AND CURDATE() BETWEEN fecha_inicio AND fecha_fin;
+  RETURN IF(v_cnt>0,1,0);
+END;
+
+-- CREATE INDEX
+-- JUSTIFICO ESTA ELECCION YA QUE EN LA TABLA DE RESERVAS SE BUSCA EL USUARIO_ID PARA OPTIMIZAR LAS BUSQUEDAS DE LOS USUARIOS,YA QUE DEL ID SE SABE LAS RESERVAS QUE TIENE ESE USUARIO 
+CREATE INDEX idx_cliente ON reservas(usuario_id);
+
+-- BUSQUEDA QUE CUENTA EL NUMERO DE RESERVAS 
+SELECT u.usuario_id, u.nombre, u.apellido, COUNT(r.reserva_id) as reservas 
+-- BUSCA EN USUARIOS Y UNE RESERVAS CON USUARIOS
+FROM usuarios u JOIN reservas r ON u.usuario_id = r.usuario_id 
+-- LOS AGRUPA LOS QUE SON MAS DE 5 RESEVAS
+GROUP BY u.usuario_id HAVING COUNT(r.reserva_id) > 5
+
+
+--CREATE EVENT
+
+CREATE EVENT backup_automatico_diarios
+ON SCHEDULE EVERY 1 DAY
+DO
+  -- Aplicar backup diarios 
+  DELETE FROM usuarios WHERE creado_en < DATE_SUB(NOW(), INTERVAL 99 YEAR);
+  UPDATE pagos
+  SET 
+  WHERE 
+    AND ;
